@@ -78,10 +78,7 @@ const getSome = async () => {
   }
 }
 ```
-<<<<<<< HEAD
 
 ## TODO
 
 This currently only supports `.collection` and `.doc` calls with a `.get` method. At some point, this will need to include other methods such as `.where` to be more robust.
-=======
->>>>>>> ea6d7665de6872fdaf92fa732066601304094e0e
