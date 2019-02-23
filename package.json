@@ -1,0 +1,26 @@
+{
+  "name": "firestore-rest",
+  "version": "1.0.0",
+  "description": "Makes firestore requests using the Google REST API to avoid the gRPC cold start issue.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "firestore",
+    "firebase",
+    "googleapis",
+    "node",
+    "firebase-functions",
+    "gcp"
+  ],
+  "author": "Sam Corcos <sam@corcos.io>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "standard": "^12.0.1"
+  },
+  "standard": {
+    "parser": "babel-eslint"
+  }
+}
