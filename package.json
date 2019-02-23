@@ -22,5 +22,8 @@
   },
   "standard": {
     "parser": "babel-eslint"
+  },
+  "dependencies": {
+    "googleapis": "^37.2.0"
   }
 }

@@ -12,19 +12,40 @@ Hopefully, when [this ticket](https://github.com/googleapis/gax-nodejs/issues/40
 
 https://cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.documents
 
-## Installation
+## Set up
 
 ```
 npm i --save firestore-rest
 ```
 
+You will need to ensure that you have `GOOGLE_APPLICATION_CREDENTIALS` and `GCLOUD_PROJECT` as environment variables. The former is the path to your `.json` credentials file, and the latter is the project name.
+
+**NOTE:** I found that I had to export these within the function because Firebase Functions does not allow upper-case variable names for some reason. If you try to do so, you'll get the following error:
+
+```s
+Error: Invalid config name onCadenceAssignToContact.GOOGLE_APPLICATION_CREDENTIALS, cannot use upper case.
+```
+
+So my firebase initialization file has this at the top:
+
+```js
+process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, '../path/to/credentials.json')
+process.env.GCLOUD_PROJECT = 'my-app-name'
+```
+
+These aren't secret, so it doesn't really matter how you pass those values to the API.
+
 ## Usage
 
-When initializing `firebase-admin`, initialize and export `db` as well, as seen below. 
+When initializing `firebase-admin`, initialize and export `db` as well. See example below for one way to configure your app:
 
 ```js
 const admin = require('firebase-admin')
 const Firestore = require('firestore-rest')
+const path = require('path')
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS = path.join(__dirname, '../path/to/credentials.json')
+process.env.GCLOUD_PROJECT = 'my-app-name'
 
 var serviceAccount = require('../path/to/credentials.json')
 
@@ -54,3 +75,7 @@ const getSome = async () => {
   }
 }
 ```
+
+## TODO
+
+This currently only supports `.collection` and `.doc` calls with a `.get` method. At some point, this will need to include other methods such as `.where` to be more robust.
