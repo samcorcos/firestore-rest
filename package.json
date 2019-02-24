@@ -1,6 +1,6 @@
 {
   "name": "firestore-rest",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Makes firestore requests using the Google REST API to avoid the gRPC cold start issue.",
   "main": "index.js",
   "scripts": {
@@ -24,6 +24,7 @@
     "parser": "babel-eslint"
   },
   "dependencies": {
+    "firestore-adapter": "^1.0.6",
     "googleapis": "^37.2.0"
   }
 }

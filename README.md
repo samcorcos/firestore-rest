@@ -72,7 +72,7 @@ Then you can use the function the same way you would otherwise, as this package 
 const getSome = async () => {
   try {
     const response = await db.collection('users').doc('12312312421321').get()
-    console.log(response)
+    console.info(response)
   } catch (err) {
     console.error(err)
   }

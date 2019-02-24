@@ -1,13 +1,22 @@
 const { google } = require('googleapis')
+const { convert } = require('firestore-adapter')
 const firestore = google.firestore('v1')
 
 // regex to get Id of the doc being requested (which is the end of the path/name/url)
 const regex = /([^/]+$)/g
 
+/**
+ * Processes the item for compatibility with the existing Firestore API
+ *
+ * @param {Object} item - the item to be processed, which is a single document
+ */
 const processItem = (item) => {
   // we need to inject the `id` and the `data()` method to make it compatible with existing API
   const id = item.name.match(regex)[0]
-  const data = () => item.fields
+  // normalize data from typed values into usable values
+  // https://cloud.google.com/firestore/docs/reference/rest/v1/Value
+  const data = () => convert(item.fields)
+
   return {
     id,
     data
@@ -42,9 +51,6 @@ class Firestore {
 
     // https://cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.documents/get
     const name = `projects/${process.env.GCLOUD_PROJECT}/databases/(default)/documents${this.path}`
-
-    // reset path state
-    this.path = ''
 
     let result
     try {
