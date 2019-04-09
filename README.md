@@ -82,3 +82,6 @@ const getSome = async () => {
 ## TODO
 
 This currently only supports `.collection` and `.doc` calls with a `.get` method. At some point, this will need to include other methods such as `.where` to be more robust.
+
+- [ ] Support `.set`
+- [ ] Support `.where`
