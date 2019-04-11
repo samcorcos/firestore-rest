@@ -1,5 +1,6 @@
 const { google } = require('googleapis')
 const { convert } = require('firestore-adapter')
+const moment = require('moment')
 const firestore = google.firestore('v1')
 
 // regex to get Id of the doc being requested (which is the end of the path/name/url)
@@ -15,11 +16,20 @@ const processItem = (item) => {
   const id = item.name.match(regex)[0]
   // normalize data from typed values into usable values
   // https://cloud.google.com/firestore/docs/reference/rest/v1/Value
-  const data = () => convert(item.fields)
+  const data = () => convert.docToData(item.fields)
 
   return {
     id,
     data
+  }
+}
+
+const checkEnv = () => {
+  if (!process.env.GCLOUD_PROJECT) {
+    throw new Error('Missing GCLOUD_PROJECT environment variable')
+  }
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    throw new Error('Missing GOOGLE_APPLICATION_CREDENTIALS environment variable')
   }
 }
 
@@ -38,12 +48,7 @@ class Firestore {
   }
 
   async get () {
-    if (!process.env.GCLOUD_PROJECT) {
-      throw new Error('Missing GCLOUD_PROJECT environment variable')
-    }
-    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      throw new Error('Missing GOOGLE_APPLICATION_CREDENTIALS environment variable')
-    }
+    checkEnv()
 
     const auth = await google.auth.getClient({
       scopes: 'https://www.googleapis.com/auth/cloud-platform'
@@ -79,6 +84,60 @@ class Firestore {
     // if there is `result.data.documents`, then we are returning a collection, which means we
     // need to map over each item being returned and add the same values
     return result.data.documents.map(doc => processItem(doc))
+  }
+
+  async set(data, options = {}) {
+    checkEnv()
+
+    const auth = await google.auth.getClient({
+      scopes: 'https://www.googleapis.com/auth/cloud-platform'
+    })
+
+    // https://cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.documents/get
+    const name = `projects/${process.env.GCLOUD_PROJECT}/databases/(default)/documents${this.path}`
+
+    /** convert the data which is a json to Firestore document - https://cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.documents#Document */
+    const resource = {
+      name,
+      ...convert.dataToDoc(data),
+    }
+
+    const opts = {}
+
+    /** If merge set to `true`, the existing fields on server should be remained.
+     *  If the document exists on the server and has fields not referenced in the mask, they are left unchanged.
+     *  Patch function handles merge with `updateMask.fieldPaths` option. If it's not provided, it just set with the new data
+     */
+    if (options.merge)
+      opts['updateMask.fieldPaths'] = Object.keys(data) // Set the fields of data
+
+    /** Update only specific fields */
+    if (options.mergeFields)
+      opts['updateMask.fieldPaths'] = options.mergeFields
+
+    let response
+    try {
+      response = await firestore.projects.databases.documents.patch({
+        name,
+        auth,
+        resource,
+        ...opts
+      })
+    } catch (err) {
+      console.error(err)
+    }
+
+    const result = {
+      /** Javascript moment object */
+      writeTime: moment(response.data.updateTime),
+      /** isEqual function */
+      isEqual: (value) => {
+        const data = convert.docToData(response.data.fields)
+        return JSON.stringify(data) === JSON.stringify(value)
+      }
+    }
+
+    return result
   }
 }
 
