@@ -1,6 +1,6 @@
 {
   "name": "firestore-rest",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Makes firestore requests using the Google REST API to avoid the gRPC cold start issue.",
   "main": "index.js",
   "scripts": {
