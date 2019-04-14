@@ -69,6 +69,7 @@ module.exports = {
 Then you can use the function the same way you would otherwise, as this package transforms the results to be backwards-compatible. For example:
 
 ```js
+// get
 const getSome = async () => {
   try {
     const response = await db.collection('users').doc('12312312421321').get()
@@ -77,11 +78,27 @@ const getSome = async () => {
     console.error(err)
   }
 }
+
+// set
+const setSome = async () => {
+    try {
+        const response = await db.collection('users').doc('foo').set({ email: 'user@example.com' })
+        console.log(response.writeTime.toDate())
+    } catch (err) {
+        console.error(err)
+    }
+}
+
+// where
+const setSome = async () => {
+    try {
+        const response = await db.collection('users').where('email', '==', 'user@example.com').where('name', '>=', 'foo').get()
+        response.forEach(user => {
+            console.log(user.data())
+        })
+        console.log(response.writeTime.toDate())
+    } catch (err) {
+        console.error(err)
+    }
+}
 ```
-
-## TODO
-
-This currently only supports `.collection` and `.doc` calls with a `.get` method. At some point, this will need to include other methods such as `.where` to be more robust.
-
-- [ ] Support `.set`
-- [ ] Support `.where`
