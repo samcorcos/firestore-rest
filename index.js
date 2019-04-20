@@ -85,14 +85,20 @@ class Firestore {
 
   collection (path) {
     const ref = new Firestore(`${this.path}/${path}`)
-    ref.set = null
+    ref.set = ref.delete = undefined
     return ref
   }
 
   doc (path) {
     const ref = new Firestore(`${this.path}/${path}`)
-    ref.add = null
-    ref.where = null
+    ref.add = ref.where = undefined
+    return ref
+  }
+
+  where(fieldPath, opStr, value) {
+    /** new Firestore instance with path and query */
+    const ref = new Firestore(`${this.path}`, { fieldPath, opStr, value })
+    ref.add = ref.set = ref.doc = ref.collection = ref.delete = undefined
     return ref
   }
 
@@ -194,14 +200,27 @@ class Firestore {
     return this.doc(id).set(data)
   }
 
-  where(fieldPath, opStr, value) {
-    /** new Firestore instance with path and query */
-    const ref = new Firestore(`${this.path}`, { fieldPath, opStr, value })
-    ref.add = null
-    ref.set = null
-    ref.doc = null
-    ref.collection = null
-    return ref
+  async delete() {
+    checkEnv()
+
+    const auth = await google.auth.getClient({
+      scopes: 'https://www.googleapis.com/auth/cloud-platform'
+    })
+
+    // https://cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.documents/get
+    const name = `projects/${process.env.GCLOUD_PROJECT}/databases/(default)/documents${this.path}`
+
+    let response
+    try {
+      response = await firestore.projects.databases.documents.delete({
+        name,
+        auth
+      })
+    } catch (err) {
+      console.error(err)
+    }
+
+    return response.data
   }
 }
 
